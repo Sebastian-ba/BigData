@@ -22,13 +22,23 @@ class Travis extends FunSpec with Matchers {
         }
     }
 
-    describe("Spark test") {
-        it("Init test") {
+    describe("Spark") {
+        it("Init Spark") {
             val spark = SparkSession.builder.
     					appName("MyApp").
     					master("local").
     					getOrCreate
             spark should not be null
+        }
+        it("Load datafile Spark") {
+            val spark = SparkSession.builder.
+    					appName("MyApp").
+    					master("local").
+    					getOrCreate
+
+            val df = spark.read.json("http://130.226.142.195/bigdata/project2/meta.json")
+            spark should not be null
+            df should not be null
         }
     }
 }
