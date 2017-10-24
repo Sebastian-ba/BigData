@@ -4,7 +4,7 @@ import os, requests
 # Osfuscate -> separate file
 directory = "../data/"
 with open("scriptUrl.txt", "r") as cfg:
-	url = cfg.read()
+	url = cfg.read().strip()
 extension = 'json'
 
 def listFiles(url, ext=''):
