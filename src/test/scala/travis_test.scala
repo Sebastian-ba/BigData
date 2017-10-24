@@ -2,18 +2,22 @@ import org.scalatest._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
+import collection.mutable.Stack
 
 class Travis extends FunSpec with Matchers {
 
-  it("spark") {
-    val app = "Scala Spark"
-    val conf = new SparkConf().setAppName(app)
-    val sc = SparkContext.getOrCreate(conf)
+    "A Stack" should "pop values in last-in-first-out order" in {
+      val stack = new Stack[Int]
+      stack.push(1)
+      stack.push(2)
+      stack.pop() should be (2)
+      stack.pop() should be (1)
+    }
 
-    // val df = spark.read.json("http://130.226.142.195/bigdata/project2/meta.json")
-
-    var spark = SparkSession.builder.appName("myapp").master("local").getOrCreate
-
-    spark should not be null
-  }
+    it should "throw NoSuchElementException if an empty stack is popped" in {
+      val emptyStack = new Stack[Int]
+      a [NoSuchElementException] should be thrownBy {
+        emptyStack.pop()
+      }
+    }
 }
