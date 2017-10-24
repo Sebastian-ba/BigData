@@ -42,7 +42,7 @@ class Travis extends FunSpec with Matchers {
     		// println("Newest 18+ game: " + p.pegi18Newest(pegiDF).first)
     		// println("Since 2010 the top 3 genres have been: " + p.highestGenreCountSince2010(pegiDF))
 
-            p.pegiCount18(pegiDF) should be 999
+            assert(p.pegiCount18(pegiDF) == 999)
 
 
         }
