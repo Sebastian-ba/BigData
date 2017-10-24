@@ -1,12 +1,5 @@
-language: python
-sudo: required
+language: scala
+scala:
+   - 2.11.7
 notifications:
   email: false
-python:
-  - "3.6"
-  - "nightly"
-
-install:
-  - pip install nose
-script:
-  - nosetests -vd -w matching/Python testUtils.py
