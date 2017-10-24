@@ -22,7 +22,13 @@ class Travis extends FunSpec with Matchers {
         }
     }
 
-    // describe("Spark test") {
-    //
-    // }
+    describe("Spark test") {
+        it("Init test") {
+            val spark = SparkSession.builder.
+    					appName("MyApp").
+    					master("local").
+    					getOrCreate
+            spark should not be null
+        }
+    }
 }
