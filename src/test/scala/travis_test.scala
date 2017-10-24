@@ -38,9 +38,9 @@ class Travis extends FunSpec with Matchers {
             val pegiDF = p.pegiDFLoader("data/pegi_ratings.csv")
 
     		println("No. of 18+ games: " + p.pegiCount18(pegiDF))
-    		println("No. of PS2-PS4 games with 18+ rating: " + p.pegi18forPS2toPS4(pegiDF)._2)
-    		println("Newest 18+ game: " + p.pegi18Newest(pegiDF).first)
-    		println("Since 2010 the top 3 genres have been: " + p.highestGenreCountSince2010(pegiDF))
+    		// println("No. of PS2-PS4 games with 18+ rating: " + p.pegi18forPS2toPS4(pegiDF)._2)
+    		// println("Newest 18+ game: " + p.pegi18Newest(pegiDF).first)
+    		// println("Since 2010 the top 3 genres have been: " + p.highestGenreCountSince2010(pegiDF))
 
             p.pegiCount18(pegiDF) should be 999
 
