@@ -3,7 +3,8 @@ scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
-libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.5" % "test"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.4"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 
 libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.2.0" % "provided"
 // https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.11

@@ -1,8 +1,11 @@
 import org.scalatest._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import collection.mutable.Stack
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.Encoders
 
 class Travis extends FunSpec with Matchers {
     describe("A Set") {
@@ -18,4 +21,8 @@ class Travis extends FunSpec with Matchers {
             }
         }
     }
+
+    // describe("Spark test") {
+    //
+    // }
 }
