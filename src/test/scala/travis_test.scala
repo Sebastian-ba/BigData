@@ -50,7 +50,7 @@ class Travis extends FunSpec with Matchers {
             						StructField("ssid",StringType,true))),true),true),
             					StructField("ts",LongType,true))),true),true)))
 
-            val rawDeviceDF = spark.read.schema(readingsSchema).json("data/2-10-2017.json").as[Readings]
+            val rawDeviceDF = spark.read.schema(readingsSchema).json("src/test/scala/data/2-10-2017.json").as[Readings]
             rawDeviceDF should not be null
         }
 
