@@ -8,7 +8,6 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
-import spark.implicits._
 
 class Travis extends FunSpec with Matchers {
     describe("A Set") {
@@ -38,7 +37,19 @@ class Travis extends FunSpec with Matchers {
             val spark = SparkSession.builder.
 						appName("Scala Spark").
 						getOrCreate
-            val rawDeviceDF = spark.read.json("data/2-10-2017.json").as[Readings]
+            import spark.implicits._
+            val readingsSchema = StructType(Array(
+            				StructField("did",StringType,true),
+            				StructField("readings",ArrayType(StructType(Array(
+            					StructField("clients",ArrayType(StructType(Array(
+            						StructField("cid",StringType,true),
+            						StructField("clientOS",StringType,true),
+            						StructField("rssi",DoubleType,true),
+            						StructField("snRatio",DoubleType,true),
+            						StructField("ssid",StringType,true))),true),true),
+            					StructField("ts",LongType,true))),true),true)))
+
+            val rawDeviceDF = spark.read.schema(readingsSchema).json("data/2-10-2017.json").as[Readings]
             rawDeviceDF should not be null
         }
 
