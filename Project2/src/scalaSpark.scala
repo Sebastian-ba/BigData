@@ -53,10 +53,10 @@ object scalaSpark {
 			(dt.getTime() / 1000)
 		})
 
-		val tmp = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
-		val toReturn = tmp.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
+		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
+		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
 
-		return toReturn
+		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
