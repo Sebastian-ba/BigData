@@ -16,6 +16,17 @@ case class Readings (did:String, readings:Array[(Array[(String,String,Double,Dou
 case class ExplodedReadings (did: String, readings:(Array[(String,String,Double,Double,String)],Long))
 case class FlattenedReadingsInput (did:String, cid:Array[String], clientOS:Array[String], rssi:Array[Double], snRatio:Array[Double], ssid:Array[String], ts:Long)
 case class FlattenedReadings (did:String, cid:String, clientOS:String, rssi:Double, snRatio:Double, ssid:String, ts:Long)
+//Schema from Omar Shahbaz Khan
+val readingsSchema = StructType(Array(
+				StructField("did",StringType,true), 
+				StructField("readings",ArrayType(StructType(Array(
+					StructField("clients",ArrayType(StructType(Array(
+						StructField("cid",StringType,true), 
+						StructField("clientOS",StringType,true), 
+						StructField("rssi",DoubleType,true), 
+						StructField("snRatio",DoubleType,true), 
+						StructField("ssid",StringType,true))),true),true), 
+					StructField("ts",LongType,true))),true),true)))
 
 
 case class DeviceReadings (devicename:String, upTime:String, deviceFunction:String, deviceMode:String, did:String, location:String)
@@ -32,7 +43,7 @@ object scalaSpark {
 						appName("Scala Spark").
 						getOrCreate
 
-		val rawDeviceDF = spark.read.json("../data/2-10-2017.json").as[Readings]
+		val rawDeviceDF = spark.read.schema(readingsSchema).json("../data/2-10-2017.json").as[Readings]
 		val flatDeviceDF = flattenDF(rawDeviceDF)
 		val deviceDF = fullFlatten(flatDeviceDF)
 
