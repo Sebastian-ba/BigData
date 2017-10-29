@@ -52,6 +52,11 @@ class Travis extends FunSpec with Matchers {
 
             val rawDeviceDF = spark.read.schema(readingsSchema).json("src/test/scala/data/2-10-2017.json").as[Readings]
             rawDeviceDF should not be null
+            rawDeviceDF should equal(Array(
+                Readings("d7cc92c24be32d5d419af1277289313c", Array(
+                    "1506895301"
+                ))
+            ))
         }
 
         // it("Load datafile Spark") {
