@@ -54,7 +54,7 @@ class Travis extends FunSpec with Matchers {
             rawDeviceDF should not be null
             rawDeviceDF should equal(Array(
                 Readings("d7cc92c24be32d5d419af1277289313c", Array(
-                    "1506895301"
+                    (Array(), 1506895301)
                 ))
             ))
         }
