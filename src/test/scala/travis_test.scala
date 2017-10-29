@@ -7,8 +7,8 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.types._
-
-
+import org.apache.spark.sql.functions._
+import spark.implicits._
 
 class Travis extends FunSpec with Matchers {
     describe("A Set") {
