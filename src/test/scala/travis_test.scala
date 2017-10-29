@@ -26,6 +26,7 @@ class Travis extends FunSpec with Matchers {
     }
 
     describe("Spark") {
+        case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
         it("Init Spark") {
             val spark = SparkSession.builder.
     					appName("MyApp").
@@ -33,18 +34,26 @@ class Travis extends FunSpec with Matchers {
     					getOrCreate
             spark should not be null
         }
-        it("Load datafile Spark") {
-            val p = new PegiRatings()
-            val pegiDF = p.pegiDFLoader("data/pegi_ratings.csv")
-
-    		println("No. of 18+ games: " + p.pegiCount18(pegiDF))
-    		// println("No. of PS2-PS4 games with 18+ rating: " + p.pegi18forPS2toPS4(pegiDF)._2)
-    		// println("Newest 18+ game: " + p.pegi18Newest(pegiDF).first)
-    		// println("Since 2010 the top 3 genres have been: " + p.highestGenreCountSince2010(pegiDF))
-
-            assert(p.pegiCount18(pegiDF) == 999)
-
-
+        it("Spark reading") {
+            val spark = SparkSession.builder.
+						appName("Scala Spark").
+						getOrCreate
+            val rawDeviceDF = spark.read.json("data/2-10-2017.json").as[Readings]
+            rawDeviceDF should not be null
         }
+
+        // it("Load datafile Spark") {
+        //     val p = new PegiRatings()
+        //     val pegiDF = p.pegiDFLoader("data/pegi_ratings.csv")
+        //
+    	// 	println("No. of 18+ games: " + p.pegiCount18(pegiDF))
+    	// 	// println("No. of PS2-PS4 games with 18+ rating: " + p.pegi18forPS2toPS4(pegiDF)._2)
+    	// 	// println("Newest 18+ game: " + p.pegi18Newest(pegiDF).first)
+    	// 	// println("Since 2010 the top 3 genres have been: " + p.highestGenreCountSince2010(pegiDF))
+        //
+        //     assert(p.pegiCount18(pegiDF) == 999)
+        //
+        //
+        // }
     }
 }
