@@ -36,6 +36,7 @@ case class LectureReadings (name:String, startDate:String, endDate:String, start
 
 case class ParsedLectureReadings (name:String, startDate:String, endDate:String, startTime:String, endTime:String, room:String, lecturers:String, programme:String, startTimestamp:Long, endTimestamp:Long)
 
+
 object scalaSpark {
 
 	def start() : Unit = {
@@ -50,10 +51,11 @@ object scalaSpark {
 		val routersDF = spark.read.json("../data/meta.json").as[DeviceReadings]
 
 		val rawDF = spark.read.json("../data/rooms-2017-10-02.json").as[LectureReadings]
-
 		val lectureDF = toUnixTimestamp(rawDF)
 
-		lectureDF.show()
+		//val batchView1 = new batchView1(deviceDF, routersDF, lectureDF)
+		batchView1.construct(deviceDF)
+
 	}
 
 	def toUnixTimestamp(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
