@@ -9,6 +9,8 @@ import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 
+case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
+
 class Travis extends FunSpec with Matchers {
     describe("A Set") {
         describe("when empty") {
@@ -25,7 +27,6 @@ class Travis extends FunSpec with Matchers {
     }
 
     describe("Spark") {
-        case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
         it("Init Spark") {
             val spark = SparkSession.builder.
     					appName("MyApp").
