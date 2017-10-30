@@ -1,18 +1,10 @@
-import schemas
-import batchView1
 
-object batchView1 {
-	def construct(deviceDF:Dataset[FlattenedReadings], routersDF:Dataset[DeviceReadings], lectureDF:Dataset[ParsedLectureReadings]):Unit = {
-		println("Constructing batch view 1 using parameters...")
-		deviceDF.show()
-		routersDF.show()
-		lectureDF.show()
-	}
-}
 
 object BatchLayer {
 
 	def start() : Unit = {
+
+		println("Starting Batch Layer")
 
 		val spark = SparkSession.builder
 			.appName("Scala Spark")
@@ -20,21 +12,18 @@ object BatchLayer {
 		val conf = new SparkConf().setAppName("BatchLayer")
     	val sc = SparkContext.getOrCreate(conf)
 
+
 		//val devices = Dataset
 		val files = new java.io.File("../../../data/device/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(files)
 
 		//First dataset:
 		val devices = spark.read.schema(readingsSchema).json(files(0).toString()).as[Readings]
-		println("Devices:")
-		devices.show()
 
 		//Rest of the datasets
 		for (i <- 1 to files.length-1) {
 			val newDF = spark.read.schema(readingsSchema).json(files(i).toString()).as[Readings]
-			println(files(i))
-			newDF.show()
-			devices.union(newDF).collect
+			devices.union(newDF)
 		}
 
 		val flatDeviceDF = flattenDF(devices)
@@ -42,8 +31,22 @@ object BatchLayer {
 
 		val routersDF = spark.read.json("../../../data/routers/meta.json").as[DeviceReadings]
 
-		val rawDF = spark.read.json("../../../data/lectures/rooms-2017-10-02.json").as[LectureReadings]
-		val lectureDF = toUnixTimestamp(rawDF)
+
+		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
+		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]
+
+		for(i <- 1 to lectureFiles.length-1){
+			val newLecture =  spark.read.json(lectureFiles(i).toString()).as[LectureReadings]
+			println(lectureFiles(i))
+			newLecture.show()
+			lectures.union(newLecture)
+		}
+
+		println("Before:")
+		lectures.show()
+		val lectureDF = toUnixTimestamp(lectures)
+		println("After: ")
+		lectureDF.show()
 
 		//CLEANING STEP
 		//dataCleaning()
