@@ -33,7 +33,7 @@ object scalaSpark {
 	}
 	def toUniformRoom(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
 		val appendRoom = udf((roomStr: String) => {
-			val roomRegex = "[\d][\w][\d]{2}[\w]?".r
+			val roomRegex = "[\\d][\\w][\\d]{2}[\\w]?".r
 			roomStr match {
 				case (room) => s"$room"
 			}
@@ -51,8 +51,8 @@ object scalaSpark {
 		})
 
 		val appendRoomList = udf((roomStr: String) => {
-			val roomRegex = "((?:[\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?))[,\s]*".r
-			val roomSplitRegex = "[\d][\w][\d]{2}(?:[-\/]([\d]+))".r
+			val roomRegex = "((?:[\\d][\\w][\\d]{2}[\\w]?(?:[-\\/](?:[\\d]+))?))[,\\s]*".r
+			val roomSplitRegex = "[\\d][\\w][\\d]{2}(?:[-\\/]([\\d]+))".r
 			val result = ""
 			for (m <- roomRegex.findAllIn(roomStr)) {
 				roomStr match {
