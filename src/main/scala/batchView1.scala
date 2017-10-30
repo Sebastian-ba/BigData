@@ -1,3 +1,5 @@
+package batchView1
+import schemas
 
 object batchView1 {
 	def construct(deviceDF:Dataset[FlattenedReadings], routersDF:Dataset[DeviceReadings], lectureDF:Dataset[ParsedLectureReadings]):Unit = {

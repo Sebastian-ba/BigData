@@ -3,7 +3,7 @@ import os, requests
 import re
 
 # Osfuscate -> separate file
-directory = "../data/"
+directory = "../../data/"
 with open("scriptUrl.txt", "r") as cfg:
 	url = cfg.read()
 	m = re.search('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})', url)
