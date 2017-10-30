@@ -1,28 +1,63 @@
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import schemas
+import batchView1
 
-object scalaSpark extends Serializable{
-
-	def printList(args: TraversableOnce[_]): Unit = {
-  		args.foreach(println)
-	}
+object scalaSpark {
 
 	def start() : Unit = {
-	    val app = "Scala Spark";
-	    val conf = new SparkConf().setAppName(app);
-	    val sc = SparkContext.getOrCreate(conf);
+		val spark = SparkSession.builder.
+						appName("Scala Spark").
+						getOrCreate
 
+		val rawDeviceDF = spark.read.schema(readingsSchema).json("../data/2-10-2017.json").as[Readings]
+		val flatDeviceDF = flattenDF(rawDeviceDF)
+		val deviceDF = fullFlatten(flatDeviceDF)
 
-	    val df = spark.read.json("3-10-2017.json");
+		val routersDF = spark.read.json("../data/meta.json").as[DeviceReadings]
 
-	    df.show();
+		val rawDF = spark.read.json("../data/rooms-2017-10-02.json").as[LectureReadings]
+		val lectureDF = toUnixTimestamp(rawDF)
 
-		df.printSchema();
-		//val list = df.takeAsList(2);
-		//list.printList;
+		//CLEANING STEP
+		dataCleaning()
+		//val batchView1 = new batchView1(deviceDF, routersDF, lectureDF)
+		batchView1.construct(deviceDF, 
+			                 routersDF, 
+			                 lectureDF)
 
-	    //val dataFile = sc.textFile(args(0))
-	    //val output = calculateKeyFigures(dataFile)
-	    //output.saveAsTextFile("file:////" + args(1))
-	  }
+	}
+
+	def dataCleaning() = {
+
+	}
+
+	def toUnixTimestamp(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
+		val concatToTimestamp = udf((first: String, second: String) => {
+			val tmp = first + " " + second
+			val sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm")
+			val dt = sdf.parse(tmp)
+			(dt.getTime() / 1000)
+		})
+
+		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
+		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
+
+		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
+	}
+
+	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
+		df.flatMap(row => {
+	        val seq = for( i <- 0 until row.cid.size) yield { 
+	        	FlattenedReadings(row.did, row.cid(i), row.clientOS(i), row.rssi(i), row.snRatio(i), row.ssid(i), row.ts)
+	        }
+	        seq.toSeq			
+		})
+    }
+
+	def flattenDF (df:Dataset[Readings]): Dataset[FlattenedReadingsInput] = {
+		val expDF = df.withColumn("readings", explode(col("readings"))).as[ExplodedReadings]
+		expDF
+			.select($"did",$"readings.clients.cid",$"readings.clients.clientOS",$"readings.clients.rssi",$"readings.clients.snRatio",$"readings.clients.ssid",$"readings.ts")
+			.drop("readings")
+			.as[FlattenedReadingsInput]
+	}
 }
