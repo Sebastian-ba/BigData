@@ -84,10 +84,22 @@ object BatchLayer {
 			(dt.getTime() / 1000)
 		})
 
+		val appendRoomList = udf((roomStr: String) => {
+			val roomRegex = """((?:[\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?))[,\s]*""".r
+			val roomSplitRegex = """[\d][\w][\d]{2}(?:[-\/]([\d]+))""".r
+			val result = ""
+			for (m <- roomRegex.findAllIn(roomStr)) {
+				roomStr match {
+					case (room) => s"$room"
+				}
+			}
+		})
+
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
+		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", appendRoomList($"room"))
 
-		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
+		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
