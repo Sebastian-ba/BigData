@@ -50,11 +50,14 @@ object BatchLayer {
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
 		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]
-
+		println("Before union")
+		
 		for(i <- 1 to lectureFiles.length-1){
 			val newLecture =  spark.read.json(lectureFiles(i).toString()).as[LectureReadings]
+			println("Union " + i + "  "+  lectureFiles(i))
 			lectures.union(newLecture)
 		}
+		println("To unix")
 		val lectureDF = toUnixTimestamp(lectures)
 
 		masterDataset = MasterDataset(deviceDF, routersDF, lectureDF)
