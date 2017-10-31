@@ -1,6 +1,21 @@
+import org.apache.spark.sql.Dataset
 
+
+
+/*{
+val devices = _devices
+val routers = _routers
+val lectures = _lectures
+
+}*/
+
+
+
+//val masterDataset:MasterDataset
 
 object BatchLayer {
+	case class MasterDataset(devices:Dataset[FlattenedReadings], routers:Dataset[DeviceReadings], lectures:Dataset[ParsedLectureReadings])
+	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[DeviceReadings].toDS, Seq.empty[ParsedLectureReadings].toDS)
 
 	def start() : Unit = {
 
@@ -42,17 +57,21 @@ object BatchLayer {
 			lectures.union(newLecture)
 		}
 
-		println("Before:")
-		lectures.show()
+		//println("Before:")
+		//lectures.show()
 		val lectureDF = toUnixTimestamp(lectures)
-		println("After: ")
-		lectureDF.show()
+		//println("After: ")
+		//lectureDF.show()
 
 		//CLEANING STEP
 		//dataCleaning()
-		batchView1.construct(deviceDF, 
+		/*batchView1.construct(deviceDF, 
 			                 routersDF, 
-			                 lectureDF)
+			                 lectureDF)*/
+
+		masterDataset = MasterDataset(deviceDF, routersDF, lectureDF)
+		println("Master Dataset: ")
+		masterDataset.lectures.show()
 
 	}
 
