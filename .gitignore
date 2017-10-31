@@ -1,0 +1,6 @@
+data/*
+host.txt
+src/scriptUrl.txt
+src/main/scala/metastore_db/*
+src/main/scala/derby.log
+*/*/.DS_STORE
