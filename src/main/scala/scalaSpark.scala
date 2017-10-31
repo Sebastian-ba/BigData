@@ -13,21 +13,33 @@ object scalaSpark {
 		val deviceDF = fullFlatten(flatDeviceDF)
 
 		val routersDF = spark.read.json("../data/meta.json").as[DeviceReadings]
+		val parsedRoutersDF = toUniformRoom(routersDF)
 
 		val rawDF = spark.read.json("../data/rooms-2017-10-02.json").as[LectureReadings]
 		val lectureDF = toUnixTimestamp(rawDF)
 
 		//CLEANING STEP
 		dataCleaning()
+
 		//val batchView1 = new batchView1(deviceDF, routersDF, lectureDF)
-		batchView1.construct(deviceDF, 
-			                 routersDF, 
+		batchView1.construct(deviceDF,
+			                 parsedRoutersDF,
 			                 lectureDF)
 
 	}
 
 	def dataCleaning() = {
 
+	}
+	def toUniformRoom(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
+		val appendRoom = udf((roomStr: String) => {
+			val roomRegex = """[\d][\w][\d]{2}[\w]?""".r
+			roomStr match {
+				case (room) => s"$room"
+			}
+		})
+		val dfRoomConverted = df.withColumn("uniformRoom", appendRoom($"location"))
+		return dfRoomConverted.asInstanceOf[Dataset[ParsedDeviceReadings]]
 	}
 
 	def toUnixTimestamp(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
@@ -38,18 +50,30 @@ object scalaSpark {
 			(dt.getTime() / 1000)
 		})
 
+		val appendRoomList = udf((roomStr: String) => {
+			val roomRegex = """((?:[\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?))[,\s]*""".r
+			val roomSplitRegex = """[\d][\w][\d]{2}(?:[-\/]([\d]+))""".r
+			val result = ""
+			for (m <- roomRegex.findAllIn(roomStr)) {
+				roomStr match {
+					case (room) => s"$room"
+				}
+			}
+		})
+
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
+		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", appendRoomList($"room"))
 
-		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
+		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
 		df.flatMap(row => {
-	        val seq = for( i <- 0 until row.cid.size) yield { 
+	        val seq = for( i <- 0 until row.cid.size) yield {
 	        	FlattenedReadings(row.did, row.cid(i), row.clientOS(i), row.rssi(i), row.snRatio(i), row.ssid(i), row.ts)
 	        }
-	        seq.toSeq			
+	        seq.toSeq
 		})
     }
 
