@@ -1,17 +1,3 @@
-import org.apache.spark.sql.Dataset
-
-
-
-/*{
-val devices = _devices
-val routers = _routers
-val lectures = _lectures
-
-}*/
-
-
-
-//val masterDataset:MasterDataset
 
 object BatchLayer {
 	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[DeviceReadings], var lectures:Dataset[ParsedLectureReadings])
@@ -24,8 +10,6 @@ object BatchLayer {
 		val spark = SparkSession.builder
 			.appName("Scala Spark")
 			.getOrCreate
-		val conf = new SparkConf().setAppName("BatchLayer")
-    	val sc = SparkContext.getOrCreate(conf)
 
 
 		//val devices = Dataset
@@ -52,8 +36,11 @@ object BatchLayer {
 		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]
 
 		for(i <- 1 to lectureFiles.length-1){
-			val newLecture =  spark.read.json(lectureFiles(i).toString()).as[LectureReadings]
-			lectures.union(newLecture)
+			val tmpLectures = spark.read.json(lectureFiles(i).toString())
+			if(tmpLectures.count() > 0) {
+				val newLecture =  tmpLectures.as[LectureReadings]
+				lectures.union(newLecture)
+			}
 		}
 		val lectureDF = toUnixTimestamp(lectures)
 

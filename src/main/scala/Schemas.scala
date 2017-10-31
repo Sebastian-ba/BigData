@@ -15,8 +15,6 @@ import java.sql.Timestamp
 import org.apache.spark.rdd.RDD
 
 
-import org.apache.spark.{SparkConf, SparkContext}
-
 
 case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
 case class ExplodedReadings (did: String, readings:(Array[(String,String,Double,Double,String)],Long))
