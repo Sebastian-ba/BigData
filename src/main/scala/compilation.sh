@@ -1,0 +1,1 @@
+spark-shell -i schemas.scala BatchLayer.scala batchView1.scala

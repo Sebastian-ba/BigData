@@ -1,4 +1,6 @@
+
 import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Encoders
@@ -10,6 +12,10 @@ import spark.implicits._
 import java.text.SimpleDateFormat
 import java.sql.Date
 import java.sql.Timestamp
+import org.apache.spark.rdd.RDD
+
+
+import org.apache.spark.{SparkConf, SparkContext}
 
 
 case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
