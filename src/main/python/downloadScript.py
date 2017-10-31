@@ -11,9 +11,9 @@ import os, requests
 import re
 
 # Osfuscate -> separate file
-router_dir = "../../../data/routers/"
-room_dir = "../../../data/rooms/"
-meta_dir = "../../../data/meta/"
+router_dir = "/home/group14/BigData/data/routers/"
+room_dir = "/home/group14/BigData/data/rooms/"
+meta_dir = "/home/group14/BigData/data/meta/"
 with open("/home/group14/BigData/src/main/python/scriptUrl.txt", "r") as cfg:
         url = cfg.read()
         m = re.search('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})', url)
