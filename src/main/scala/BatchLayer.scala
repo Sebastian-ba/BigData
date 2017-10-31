@@ -14,7 +14,7 @@ val lectures = _lectures
 //val masterDataset:MasterDataset
 
 object BatchLayer {
-	case class MasterDataset(devices:Dataset[FlattenedReadings], routers:Dataset[DeviceReadings], lectures:Dataset[ParsedLectureReadings])
+	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[DeviceReadings], var lectures:Dataset[ParsedLectureReadings])
 	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[DeviceReadings].toDS, Seq.empty[ParsedLectureReadings].toDS)
 
 	def start() : Unit = {
@@ -48,31 +48,17 @@ object BatchLayer {
 
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
+		printList(lectureFiles)
 		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]
 
 		for(i <- 1 to lectureFiles.length-1){
 			val newLecture =  spark.read.json(lectureFiles(i).toString()).as[LectureReadings]
-			println(lectureFiles(i))
-			newLecture.show()
 			lectures.union(newLecture)
 		}
-
-		//println("Before:")
-		//lectures.show()
 		val lectureDF = toUnixTimestamp(lectures)
-		//println("After: ")
-		//lectureDF.show()
-
-		//CLEANING STEP
-		//dataCleaning()
-		/*batchView1.construct(deviceDF, 
-			                 routersDF, 
-			                 lectureDF)*/
 
 		masterDataset = MasterDataset(deviceDF, routersDF, lectureDF)
-		println("Master Dataset: ")
-		masterDataset.lectures.show()
-
+		println("Master Dataset Loaded")
 	}
 
 	def printList(l:Array[java.io.File]) = {
