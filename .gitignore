@@ -1,6 +1,6 @@
 data/*
 host.txt
-src/scriptUrl.txt
+scriptUrl.txt
 metastore_db
 derby.log
 .DS_STORE
