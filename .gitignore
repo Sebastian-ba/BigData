@@ -1,3 +1,4 @@
 data/*
 host.txt
 src/scriptUrl.txt
+src/main/scala/metastore_db/*
