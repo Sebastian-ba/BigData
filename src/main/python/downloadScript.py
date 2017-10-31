@@ -1,3 +1,11 @@
+import sys
+sys.path.append("/home/group14/BigData/src/main/python/libs/beautifulsoup4-4.1.0")
+sys.path.append("/home/group14/BigData/src/main/python/libs/requests-requests-81b6341")
+sys.path.append("/home/group14/BigData/src/main/python/libs/urllib3-1.22")
+sys.path.append("/home/group14/BigData/src/main/python/libs/chardet-3.0.4")
+sys.path.append("/home/group14/BigData/src/main/python/libs/certifi-2017.7.27.1")
+sys.path.append("/home/group14/BigData/src/main/python/libs/idna-2.6")
+
 from bs4 import BeautifulSoup
 import os, requests
 import re
@@ -6,10 +14,10 @@ import re
 router_dir = "../../../data/routers/"
 room_dir = "../../../data/rooms/"
 meta_dir = "../../../data/meta/"
-with open("scriptUrl.txt", "r") as cfg:
-	url = cfg.read()
-	m = re.search('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})', url)
-	url = m.group(0)
+with open("/home/group14/BigData/src/main/python/scriptUrl.txt", "r") as cfg:
+        url = cfg.read()
+        m = re.search('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})', url)
+        url = m.group(0)
 extension = 'json'
 
 def listFiles(url, ext=''):
