@@ -1,10 +1,12 @@
 
+object BatchView1 {
 
-object batchView1 {
-	def construct(deviceDF:Dataset[FlattenedReadings], routersDF:Dataset[DeviceReadings], lectureDF:Dataset[ParsedLectureReadings]):Unit = {
-		println("Constructing batch view 1 using parameters...")
-		deviceDF.show()
-		routersDF.show()
-		lectureDF.show()
+	var view:Dataset[FlattenedReadings] = Seq.empty[FlattenedReadings].toDS
+
+
+	def construct():Unit = {
+		println("Constructing batch view 1...")
+		view = BatchLayer.masterDataset.devices
+		view.show()
 	}
 }

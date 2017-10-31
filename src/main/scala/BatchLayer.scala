@@ -59,6 +59,7 @@ object BatchLayer {
 
 		masterDataset = MasterDataset(deviceDF, routersDF, lectureDF)
 		println("Master Dataset Loaded")
+
 	}
 
 	def printList(l:Array[java.io.File]) = {
