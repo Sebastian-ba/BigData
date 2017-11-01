@@ -16,14 +16,12 @@ case class View1(did:String,
 object BatchView1 {
 
 	var view:Dataset[View1] = Seq.empty[View1].toDS
+	//case class Data(var view:Dataset[View1])
+	//var data: Data = Data(Seq.empty[View1].toDS)
 
 
 	def construct():Unit = {
 		println("Constructing batch view 1...")
-		
-		val devices = BatchLayer.masterDataset.devices
-		val routers = BatchLayer.masterDataset.routers
-		//devices.show
 
 		val toDateTime = udf((ts: Long) => {
 			val df = new SimpleDateFormat("yyyy-MM-dd")
@@ -32,16 +30,18 @@ object BatchView1 {
 			
 		})
 
-		val data = devices.withColumn("date", toDateTime($"ts")).groupBy("did", "date").agg(avg("rssi"), avg("snRatio"))
-
-		val viewData = data
-							.join(routers, "did")
-							.drop("upTime")
-							.withColumnRenamed("avg(rssi)", "avgRssi")
-							.withColumnRenamed("avg(snRatio)", "avgSnRatio")
-		viewData.count
-		view = viewData.as[View1]
+		view = BatchLayer.masterDataset.devices
+			.withColumn("date", toDateTime($"ts"))
+			.groupBy("did", "date")
+			.agg(avg("rssi"), avg("snRatio"))
+			.join(BatchLayer.masterDataset.routers, "did")
+			.drop("upTime")
+			.withColumnRenamed("avg(rssi)", "avgRssi")
+			.withColumnRenamed("avg(snRatio)", "avgSnRatio")
+			.as[View1]
 		
+
+		//data = Data(view)
 		println("Done constructing batch view 1")
 	}
 
