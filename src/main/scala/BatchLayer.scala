@@ -30,7 +30,7 @@ object BatchLayer {
 
 		val routersDF = spark.read.json("../../../data/routers/meta.json").as[DeviceReadings]
 		val parsedRoutersDF = toUniformRoom(routersDF)
-
+		parsedRoutersDF.show()
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
@@ -45,6 +45,7 @@ object BatchLayer {
 		}
 		val lectureDF = toUnixTimestamp(lectures)
 
+		//masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
 		masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
 		println("Master Dataset Loaded")
 
@@ -56,9 +57,11 @@ object BatchLayer {
 
 	def toUniformRoom(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
 		val appendRoom = udf((roomStr: String) => {
-			val roomRegex = """[\d][\w][\d]{2}[\w]?""".r
+			println("->"+roomStr+"<-")
+			val roomRegex = """[\w\W]*([\d][\w][\d]{2}[\w]?)""".r
 			roomStr match {
-				case (room) => s"$room"
+				case roomRegex(room) => s"$room"
+				case _ => ("") // No room matches, fx: 'change_me'
 			}
 		})
 		val dfRoomConverted = df.withColumn("uniformRoom", appendRoom($"location"))
@@ -73,7 +76,7 @@ object BatchLayer {
 			(dt.getTime() / 1000)
 		})
 
-		val appendRoomList = udf((roomStr: String) => {
+		/*val appendRoomList = udf((roomStr: String) => {
 			val roomRegex = """((?:[\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?))[,\s]*""".r
 			val roomSplitRegex = """[\d][\w][\d]{2}(?:[-\/]([\d]+))""".r
 			val result = ""
@@ -82,13 +85,13 @@ object BatchLayer {
 					case (room) => s"$room"
 				}
 			}
-		})
+		})*/
 
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
-		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", appendRoomList($"room"))
+		//val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", appendRoomList($"room"))
 
-		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
+		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
