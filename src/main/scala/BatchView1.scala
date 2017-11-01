@@ -26,7 +26,7 @@ object BatchView1 {
 		//devices.show
 
 		val toDateTime = udf((ts: Long) => {
-			val df = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+			val df = new SimpleDateFormat("yyyy-MM-dd")
 			val date = df.format(ts * 1000L)
 			date
 			

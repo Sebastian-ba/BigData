@@ -17,12 +17,13 @@ object BatchLayer {
 		printList(files)
 
 		//First dataset:
-		val devices = spark.read.schema(readingsSchema).json(files(0).toString()).as[Readings]
+		var devices = spark.read.schema(readingsSchema).json(files(0).toString()).as[Readings]
 
 		//Rest of the datasets
 		for (i <- 1 to files.length-1) {
 			val newDF = spark.read.schema(readingsSchema).json(files(i).toString()).as[Readings]
-			devices.union(newDF)
+			devices = devices.union(newDF)
+			println("Number of devices loaded: " + devices.count)
 		}
 
 		val flatDeviceDF = flattenDF(devices)
@@ -33,12 +34,12 @@ object BatchLayer {
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
-		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]		
+		var lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]		
 		for(i <- 1 to lectureFiles.length-1){
 			val tmpLectures = spark.read.json(lectureFiles(i).toString())
 			if(tmpLectures.count() > 0) {
 				val newLecture =  tmpLectures.as[LectureReadings]
-				lectures.union(newLecture)
+				lectures = lectures.union(newLecture)
 			}
 		}
 		val lectureDF = cleanLectureReadings(lectures)
