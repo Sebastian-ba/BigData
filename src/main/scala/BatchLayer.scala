@@ -91,8 +91,8 @@ object BatchLayer {
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
 		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", toUniformRoomList($"room"))
-		
-		return flattenLectureReadings(dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]])
+
+		return flattenLectureReadings(dfRoomParsed.as[ParsedLectureReadings])
 	}
 
 	def flattenLectureReadings(df:Dataset[ParsedLectureReadings]) : Dataset[FlattenedLectureReadings] = {
