@@ -18,13 +18,16 @@ object scalaSpark {
 		val rawDF = spark.read.json("../data/rooms-2017-10-02.json").as[LectureReadings]
 		val lectureDF = toUnixTimestamp(rawDF)
 
+		deviceDF.show()
+		parsedRoutersDF.show()
+
 		//CLEANING STEP
-		dataCleaning()
+		//dataCleaning()
 
 		//val batchView1 = new batchView1(deviceDF, routersDF, lectureDF)
-		batchView1.construct(deviceDF,
-			                 parsedRoutersDF,
-			                 lectureDF)
+		//batchView1.construct(deviceDF,
+		//	                 parsedRoutersDF,
+		//	                 lectureDF)
 
 	}
 
