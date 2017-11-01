@@ -1,17 +1,17 @@
 
-case class View3(
-	did:String, 
-	cid: String,
-	deviceName:String,	
-	location:String, 
-	uniformRoom:String,
-	min_time:String,
-	max_time:String)
+case class View3(cid: String,
+	date: String, 
+	startTime: String,
+	endTime: String,
+	singularRoom: String,
+	lecturers: String,
+	courseName: String,
+	programme: String,
+	routersUsed: Long)
 
 object BatchView3 {
 
 	var view:Dataset[View3] = Seq.empty[View3].toDS
-
 
 	def construct():Unit = {
 		BatchLayer.loadIfNone()
@@ -31,52 +31,33 @@ object BatchView3 {
 			
 		})
 
-		MasterDataset.lectures.as[FlattenedLectureReadings]
-			.filter(p => p.lecturers == "Thore Husfeldt")
-			.filter(p => p.singularRoom == "4A20")
-			.show()
-
-		val v1 = BatchView2
+		view = BatchView2
 			.view
 			.as[View2]
 			.join(
-					MasterDataset.lectures.as[FlattenedLectureReadings],
+					MasterDataset.lectures.as[FlattenedLectureReadings].distinct(),
 					$"singularRoom" === $"uniformRoom" && 
 					$"startDate" === $"date" &&
 					$"min_time" > $"startTime" &&
 					$"max_time" < $"endTime")
-			.groupBy("cid","date","startDate", "startTime", "endTime", "singularRoom", "lecturers", "name")
+			.groupBy("cid","date","startDate", "startTime", "endTime", "singularRoom", "lecturers", "name", "programme")
 			.agg(count("did"))
 			.drop("startDate")
 			.withColumnRenamed("name", "courseName")
 			.withColumnRenamed("count(did)", "routersUsed")
-			//.orderBy(desc("name"))
-			//.show()
-
-		v1
-			.groupBy("date", "startTime", "endTime", "singularRoom", "lecturers", "courseName")
-			.agg(count("cid"))
-			.filter(p => p(4) == "Thore Husfeldt")
-			.show()
-
-		/*view = MasterDataset
-			.devices
-			.as[FlattenedReadings]
-			.withColumn("date", toDateTime($"ts"))
-			.groupBy("date", "did", "cid")
-			.agg(toTime(min("ts")),toTime(max("ts")))
-			.withColumnRenamed("UDF(min(ts))", "min_time")
-			.withColumnRenamed("UDF(max(ts))", "max_time")
-			.join(MasterDataset.routers.as[ParsedDeviceReadings], "did")
-			.drop("upTime")
-			.drop("deviceFunction")
-			.drop("deviceMode")
 			.as[View3]
 			.rdd
 			.cache
-			.toDS*/
+			.toDS
 
-			println("Done constructing view. Row count: " + view.count)
+		println("Done constructing view. Row count: " + view.count)
+	}
+
+	def query1: Unit = {
+		view.groupBy("date", "startTime", "endTime", "singularRoom", "lecturers", "courseName", "programme")
+			.agg(count("cid"))
+			.filter(p => p(4) == "Thore Husfeldt")
+			.show()
 	}
 }
 

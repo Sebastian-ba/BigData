@@ -1,13 +1,13 @@
 
 case class View2(
-	did:String, 
+	did: String, 
 	cid: String,
 	date: String,
-	deviceName:String,	
-	location:String, 
-	uniformRoom:String,
-	min_time:String,
-	max_time:String)
+	deviceName: String,	
+	location: String, 
+	uniformRoom: String,
+	min_time: String,
+	max_time: String)
 
 object BatchView2 {
 
