@@ -1,12 +1,13 @@
 
 case class View2(
-	did:String, 
+	did: String, 
 	cid: String,
-	deviceName:String,	
-	location:String, 
-	uniformRoom:String,
-	min_time:String,
-	max_time:String)
+	date: String,
+	deviceName: String,	
+	location: String, 
+	uniformRoom: String,
+	min_time: String,
+	max_time: String)
 
 object BatchView2 {
 
@@ -14,6 +15,7 @@ object BatchView2 {
 
 
 	def construct():Unit = {
+		BatchLayer.loadIfNone()
 		println("Constructing batch view 2...")
 
 		val toDateTime = udf((ts: Long) => {
@@ -50,3 +52,5 @@ object BatchView2 {
 			println("Done constructing view. Row count: " + view.count)
 	}
 }
+
+BatchView2.construct
