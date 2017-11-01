@@ -11,6 +11,8 @@ object BatchLayer {
 			.appName("Scala Spark")
 			.getOrCreate
 
+		
+
 
 		//val devices = Dataset
 		val files = new java.io.File("../../../data/device/").listFiles.filter(_.getName.endsWith(".json"))

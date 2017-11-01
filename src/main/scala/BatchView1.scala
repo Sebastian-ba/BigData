@@ -39,7 +39,9 @@ object BatchView1 {
 							.drop("upTime")
 							.withColumnRenamed("avg(rssi)", "avgRssi")
 							.withColumnRenamed("avg(snRatio)", "avgSnRatio")
+		viewData.count
 		view = viewData.as[View1]
+		
 		println("Done constructing batch view 1")
 	}
 
