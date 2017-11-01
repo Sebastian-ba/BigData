@@ -1,3 +1,4 @@
+import scala.collection.mutable
 
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.DataFrame
@@ -39,4 +40,4 @@ case class ParsedDeviceReadings (devicename:String, upTime:String, deviceFunctio
 
 case class LectureReadings (name:String, startDate:String, endDate:String, startTime:String, endTime:String, room:String, lecturers:String, programme:String)
 
-case class ParsedLectureReadings (name:String, startDate:String, endDate:String, startTime:String, endTime:String, room:String, lecturers:String, programme:String, startTimestamp:Long, endTimestamp:Long, roomList:String)
+case class ParsedLectureReadings (name:String, startDate:String, endDate:String, startTime:String, endTime:String, room:String, lecturers:String, programme:String, startTimestamp:Long, endTimestamp:Long, roomList:List[String])

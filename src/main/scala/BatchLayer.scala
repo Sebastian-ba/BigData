@@ -29,8 +29,7 @@ object BatchLayer {
 		val deviceDF = fullFlatten(flatDeviceDF)
 
 		val routersDF = spark.read.json("../../../data/routers/meta.json").as[DeviceReadings]
-		val parsedRoutersDF = toUniformRoom(routersDF)
-		parsedRoutersDF.show()
+		val parsedRoutersDF = cleanDeviceReadings(routersDF)
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
@@ -43,10 +42,10 @@ object BatchLayer {
 				lectures.union(newLecture)
 			}
 		}
-		val lectureDF = toUnixTimestamp(lectures)
+		val lectureDF = cleanLectureReadings(lectures)
 
-		//masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
 		masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
+
 		println("Master Dataset Loaded")
 
 	}
@@ -55,8 +54,8 @@ object BatchLayer {
 		l.foreach{println}
 	}
 
-	def toUniformRoom(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
-		val appendRoom = udf((roomStr: String) => {
+	def cleanDeviceReadings(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
+		val toUniformRoom = udf((roomStr: String) => {
 			println("->"+roomStr+"<-")
 			val roomRegex = """[\w\W]*([\d][\w][\d]{2}[\w]?)""".r
 			roomStr match {
@@ -64,11 +63,11 @@ object BatchLayer {
 				case _ => ("") // No room matches, fx: 'change_me'
 			}
 		})
-		val dfRoomConverted = df.withColumn("uniformRoom", appendRoom($"location"))
+		val dfRoomConverted = df.withColumn("uniformRoom", toUniformRoom($"location"))
 		return dfRoomConverted.asInstanceOf[Dataset[ParsedDeviceReadings]]
 	}
 
-	def toUnixTimestamp(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
+	def cleanLectureReadings(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
 		val concatToTimestamp = udf((first: String, second: String) => {
 			val tmp = first + " " + second
 			val sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm")
@@ -76,22 +75,23 @@ object BatchLayer {
 			(dt.getTime() / 1000)
 		})
 
-		/*val appendRoomList = udf((roomStr: String) => {
-			val roomRegex = """((?:[\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?))[,\s]*""".r
-			val roomSplitRegex = """[\d][\w][\d]{2}(?:[-\/]([\d]+))""".r
-			val result = ""
-			for (m <- roomRegex.findAllIn(roomStr)) {
-				roomStr match {
-					case (room) => s"$room"
-				}
+		val toUniformRoomList = udf((roomStr: String) => {
+			val roomRegex = """([\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?)""".r
+			val roomSplitRegex = """([\d][\w])([\d]{2})(?:[-\/]([\d]+))""".r
+			var results: List[String] = List()
+			for (m <- roomRegex.findAllIn(roomStr)) m match {
+				case roomSplitRegex(location, room1, room2) => 
+					results = (results :+(location+room1)) :+ (location+room2)
+				case _ => results = results :+ (m)
 			}
-		})*/
+			(results)
+		})
 
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
-		//val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", appendRoomList($"room"))
+		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", toUniformRoomList($"room"))
 
-		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
+		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
