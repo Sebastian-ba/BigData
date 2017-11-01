@@ -1,21 +1,7 @@
-import org.apache.spark.sql.Dataset
-
-
-
-/*{
-val devices = _devices
-val routers = _routers
-val lectures = _lectures
-
-}*/
-
-
-
-//val masterDataset:MasterDataset
 
 object BatchLayer {
-	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[DeviceReadings], var lectures:Dataset[ParsedLectureReadings])
-	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[DeviceReadings].toDS, Seq.empty[ParsedLectureReadings].toDS)
+	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[ParsedDeviceReadings], var lectures:Dataset[ParsedLectureReadings])
+	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[ParsedDeviceReadings].toDS, Seq.empty[ParsedLectureReadings].toDS)
 
 	def start() : Unit = {
 
@@ -24,8 +10,6 @@ object BatchLayer {
 		val spark = SparkSession.builder
 			.appName("Scala Spark")
 			.getOrCreate
-		val conf = new SparkConf().setAppName("BatchLayer")
-    	val sc = SparkContext.getOrCreate(conf)
 
 
 		//val devices = Dataset
@@ -45,7 +29,7 @@ object BatchLayer {
 		val deviceDF = fullFlatten(flatDeviceDF)
 
 		val routersDF = spark.read.json("../../../data/routers/meta.json").as[DeviceReadings]
-
+		val parsedRoutersDF = cleanDeviceReadings(routersDF)
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
@@ -53,14 +37,16 @@ object BatchLayer {
 		println("Before union")
 		
 		for(i <- 1 to lectureFiles.length-1){
-			val newLecture =  spark.read.json(lectureFiles(i).toString()).as[LectureReadings]
-			println("Union " + i + "  "+  lectureFiles(i))
-			lectures.union(newLecture)
+			val tmpLectures = spark.read.json(lectureFiles(i).toString())
+			if(tmpLectures.count() > 0) {
+				val newLecture =  tmpLectures.as[LectureReadings]
+				lectures.union(newLecture)
+			}
 		}
-		println("To unix")
-		val lectureDF = toUnixTimestamp(lectures)
+		val lectureDF = cleanLectureReadings(lectures)
 
-		masterDataset = MasterDataset(deviceDF, routersDF, lectureDF)
+		masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
+
 		println("Master Dataset Loaded")
 
 	}
@@ -69,7 +55,20 @@ object BatchLayer {
 		l.foreach{println}
 	}
 
-	def toUnixTimestamp(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
+	def cleanDeviceReadings(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
+		val toUniformRoom = udf((roomStr: String) => {
+			println("->"+roomStr+"<-")
+			val roomRegex = """[\w\W]*([\d][\w][\d]{2}[\w]?)""".r
+			roomStr match {
+				case roomRegex(room) => s"$room"
+				case _ => ("") // No room matches, fx: 'change_me'
+			}
+		})
+		val dfRoomConverted = df.withColumn("uniformRoom", toUniformRoom($"location"))
+		return dfRoomConverted.asInstanceOf[Dataset[ParsedDeviceReadings]]
+	}
+
+	def cleanLectureReadings(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
 		val concatToTimestamp = udf((first: String, second: String) => {
 			val tmp = first + " " + second
 			val sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm")
@@ -77,10 +76,23 @@ object BatchLayer {
 			(dt.getTime() / 1000)
 		})
 
+		val toUniformRoomList = udf((roomStr: String) => {
+			val roomRegex = """([\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?)""".r
+			val roomSplitRegex = """([\d][\w])([\d]{2})(?:[-\/]([\d]+))""".r
+			var results: List[String] = List()
+			for (m <- roomRegex.findAllIn(roomStr)) m match {
+				case roomSplitRegex(location, room1, room2) => 
+					results = (results :+(location+room1)) :+ (location+room2)
+				case _ => results = results :+ (m)
+			}
+			(results)
+		})
+
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
+		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", toUniformRoomList($"room"))
 
-		return dfEndTimestampConverted.asInstanceOf[Dataset[ParsedLectureReadings]]
+		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
