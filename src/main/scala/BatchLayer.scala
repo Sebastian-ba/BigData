@@ -2,7 +2,7 @@
 object MasterDataset{
 	var devices  : Dataset[FlattenedReadings] 		= Seq.empty[FlattenedReadings].toDS
 	var routers  : Dataset[ParsedDeviceReadings] 	= Seq.empty[ParsedDeviceReadings].toDS
-	var lectures : Dataset[FlattenedLectureReadings] 	= Seq.empty[ParsedLectureReadings].toDS
+	var lectures : Dataset[FlattenedLectureReadings] 	= Seq.empty[FlattenedLectureReadings].toDS
 }
 
 object BatchLayer {
@@ -106,7 +106,6 @@ object BatchLayer {
 
 	def flattenLectureReadings(df:Dataset[ParsedLectureReadings]) : Dataset[FlattenedLectureReadings] = {
 		df.flatMap(row => {
-			println(row.roomList.size)
 			val seq = for(i <- 0 until row.roomList.size) yield {
 				FlattenedLectureReadings(row.name, row.startDate, row.endDate, row.startTime, row.endTime, row.room, row.lecturers, row.programme, row.startTimestamp, row.endTimestamp, row.roomList, row.roomList(i))
 			}
