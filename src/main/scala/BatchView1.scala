@@ -36,6 +36,8 @@ object BatchView1 {
 			.withColumnRenamed("avg(rssi)", "avgRssi")
 			.withColumnRenamed("avg(snRatio)", "avgSnRatio")
 			.as[View1]
+
+		view.rdd.cache()
 		
 		println("Done constructing batch view 1")
 	}

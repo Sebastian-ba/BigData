@@ -50,6 +50,11 @@ object BatchLayer {
 		}
 		val lectureDF = cleanLectureReadings(lectures)
 
+		deviceDF.rdd.cache()
+		parsedRoutersDF.rdd.cache()
+		lectureDF.rdd.cache()
+
+
 		MasterDataSet.devices = deviceDF
 		MasterDataSet.routers = parsedRoutersDF
 		MasterDataSet.lectures = lectureDF
