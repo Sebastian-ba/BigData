@@ -6,11 +6,13 @@
 case class View1(did:String, 
 		location:String, 
 		deviceFunction:String, 
-		deviceMode:String, 
+		deviceMode:String,
+		deviceName:String,
 		uniformRoom:String,
 		avgRssi:Double,
 		avgSnRatio:Double,
-		day:String)
+		date:String, 
+		ts:Long)
 
 object BatchView1 {
 
@@ -23,8 +25,26 @@ object BatchView1 {
 		val devices = BatchLayer.masterDataset.devices
 		val routers = BatchLayer.masterDataset.routers
 		devices.show
-		routers.show
+		
+		
+		val data = devices.groupBy("did", "ts").agg(avg("rssi"), avg("snRatio"))
+		data.orderBy(asc("avg(rssi)")).show()
 
+		val df = new SimpleDateFormat("yyyy-MM-dd")
+		
+		val toDateTime = udf((ts: Long) => {
+			val df = new SimpleDateFormat("yyyy-MM-dd")
+			val date = df.format(ts * 1000L)
+			date
+			
+		})
+
+		val viewData = data.join(routers, "did").drop("upTime")
+			.withColumnRenamed("avg(rssi)", "avgRssi").withColumnRenamed("avg(snRatio)", "avgSnRatio")
+			.withColumn("date", toDateTime($"ts"))
+		viewData.show
+		view = viewData.as[View1]
+		//devices.show
 	}
 
 

@@ -55,7 +55,7 @@ object BatchLayer {
 
 	def cleanDeviceReadings(df:Dataset[DeviceReadings]): Dataset[ParsedDeviceReadings] = {
 		val toUniformRoom = udf((roomStr: String) => {
-			println("->"+roomStr+"<-")
+			//println("->"+roomStr+"<-")
 			val roomRegex = """[\w\W]*([\d][\w][\d]{2}[\w]?)""".r
 			roomStr match {
 				case roomRegex(room) => s"$room"
