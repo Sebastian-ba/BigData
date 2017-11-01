@@ -1,5 +1,5 @@
 
-object MasterDataSet{
+object MasterDataset{
 	var devices  : Dataset[FlattenedReadings] 		= Seq.empty[FlattenedReadings].toDS
 	var routers  : Dataset[ParsedDeviceReadings] 	= Seq.empty[ParsedDeviceReadings].toDS
 	var lectures : Dataset[ParsedLectureReadings] 	= Seq.empty[ParsedLectureReadings].toDS
@@ -50,15 +50,12 @@ object BatchLayer {
 		}
 		val lectureDF = cleanLectureReadings(lectures)
 
-		deviceDF.rdd.cache()
-		parsedRoutersDF.rdd.cache()
-		lectureDF.rdd.cache()
+		MasterDataset.devices = deviceDF.as[FlattenedReadings].rdd.cache.toDS
+		MasterDataset.routers = parsedRoutersDF.as[ParsedDeviceReadings].rdd.cache.toDS
+		MasterDataset.lectures = lectureDF.as[ParsedLectureReadings].rdd.cache.toDS
 
-
-		MasterDataSet.devices = deviceDF
-		MasterDataSet.routers = parsedRoutersDF
-		MasterDataSet.lectures = lectureDF
-		println("Master Dataset Loaded")
+		val rowNumber = (MasterDataset.devices.count + MasterDataset.routers.count + MasterDataset.lectures.count)
+		println("Master Dataset Loaded. Row count: " + rowNumber)
 	}
 
 	def printList(l:Array[java.io.File]) = {

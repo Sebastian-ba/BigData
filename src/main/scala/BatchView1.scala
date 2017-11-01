@@ -27,11 +27,12 @@ object BatchView1 {
 			
 		})
 
-		view = MasterDataSet.devices
+		view = MasterDataset.devices
+			.as[FlattenedReadings]
 			.withColumn("date", toDateTime($"ts"))
 			.groupBy("did", "date")
 			.agg(avg("rssi"), avg("snRatio"))
-			.join(MasterDataSet.routers, "did")
+			.join(MasterDataset.routers.as[ParsedDeviceReadings], "did")
 			.drop("upTime")
 			.withColumnRenamed("avg(rssi)", "avgRssi")
 			.withColumnRenamed("avg(snRatio)", "avgSnRatio")
@@ -39,7 +40,7 @@ object BatchView1 {
 			.rdd
 			.cache
 			.toDS
-		
-		println("Done constructing batch view 1")
+
+		println("Done constructing batch view 1. Number of rows: " + view.count)
 	}
 }
