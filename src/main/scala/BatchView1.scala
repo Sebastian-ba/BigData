@@ -14,7 +14,7 @@ case class View1(did:String,
 		date:String)
 
 object BatchView1 {
-	
+
 	var view:Dataset[View1] = Seq.empty[View1].toDS
 
 	def construct():Unit = {
@@ -27,15 +27,17 @@ object BatchView1 {
 			
 		})
 
-		view = BatchLayer.masterDataset.devices
+		view = MasterDataSet.devices
 			.withColumn("date", toDateTime($"ts"))
 			.groupBy("did", "date")
 			.agg(avg("rssi"), avg("snRatio"))
-			.join(BatchLayer.masterDataset.routers, "did")
+			.join(MasterDataSet.routers, "did")
 			.drop("upTime")
 			.withColumnRenamed("avg(rssi)", "avgRssi")
 			.withColumnRenamed("avg(snRatio)", "avgSnRatio")
 			.as[View1]
+
+		view.rdd.cache()
 		
 		println("Done constructing batch view 1")
 	}
