@@ -18,13 +18,14 @@ object BatchView1 {
 	var view:Dataset[View1] = Seq.empty[View1].toDS
 
 	def construct():Unit = {
+		BatchLayer.loadIfNone()
+
 		println("Constructing batch view 1...")
 
 		val toDateTime = udf((ts: Long) => {
 			val df = new SimpleDateFormat("yyyy-MM-dd")
 			val date = df.format(ts * 1000L)
-			date
-			
+			date	
 		})
 
 		view = MasterDataset.devices
@@ -44,3 +45,5 @@ object BatchView1 {
 		println("Done constructing batch view 1. Number of rows: " + view.count)
 	}
 }
+
+BatchView1.construct

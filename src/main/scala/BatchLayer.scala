@@ -6,7 +6,7 @@ object MasterDataset{
 }
 
 object BatchLayer {
-
+	
 	def start() : Unit = {
 
 		println("Starting Loading of MasterDataset")
@@ -57,12 +57,12 @@ object BatchLayer {
 
 		val rowNumber = (MasterDataset.devices.count + MasterDataset.routers.count + MasterDataset.lectures.count)
 		println("Master Dataset Loaded. Row count: " + rowNumber)
+	}
 
-		//Loading purposes:
-		BatchView1.construct
-		BatchView2.construct
-		BatchView3.construct
-
+	def loadIfNone() : Unit = {
+		if(MasterDataset.devices.count == 0 ) BatchLayer.start
+		if(MasterDataset.routers.count == 0 ) BatchLayer.start
+		if(MasterDataset.lectures.count == 0) BatchLayer.start
 	}
 
 	def printList(l:Array[java.io.File]) = {

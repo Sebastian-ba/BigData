@@ -14,6 +14,7 @@ object BatchView3 {
 
 
 	def construct():Unit = {
+		BatchLayer.loadIfNone()
 		println("Constructing batch view 3...")
 
 		val toDateTime = udf((ts: Long) => {
@@ -30,14 +31,24 @@ object BatchView3 {
 			
 		})
 
+		MasterDataset.lectures.as[FlattenedLectureReadings]
+			.filter(p => p.lecturers == "Thore Husfeldt")
+			.filter(p => p.singularRoom == "4A20")
+			.show()
+
 		val v1 = BatchView2
 			.view
 			.as[View2]
-			.join(MasterDataset.lectures.as[FlattenedLectureReadings], $"singularRoom" === $"uniformRoom")
-			.groupBy("cid","date","startDate", "startTime", "endTime", "singularRoom", "lecturers")
-			.agg(count("did"),min("name"))
+			.join(
+					MasterDataset.lectures.as[FlattenedLectureReadings],
+					$"singularRoom" === $"uniformRoom" && 
+					$"startDate" === $"date" &&
+					$"min_time" > $"startTime" &&
+					$"max_time" < $"endTime")
+			.groupBy("cid","date","startDate", "startTime", "endTime", "singularRoom", "lecturers", "name")
+			.agg(count("did"))
 			.drop("startDate")
-			.withColumnRenamed("min(name)", "courseName")
+			.withColumnRenamed("name", "courseName")
 			.withColumnRenamed("count(did)", "routersUsed")
 			//.orderBy(desc("name"))
 			//.show()
@@ -45,7 +56,7 @@ object BatchView3 {
 		v1
 			.groupBy("date", "startTime", "endTime", "singularRoom", "lecturers", "courseName")
 			.agg(count("cid"))
-			.orderBy("courseName")
+			.filter(p => p(4) == "Thore Husfeldt")
 			.show()
 
 		/*view = MasterDataset
@@ -68,3 +79,5 @@ object BatchView3 {
 			println("Done constructing view. Row count: " + view.count)
 	}
 }
+
+BatchView3.construct

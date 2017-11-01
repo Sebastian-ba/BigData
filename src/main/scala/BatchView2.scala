@@ -15,6 +15,7 @@ object BatchView2 {
 
 
 	def construct():Unit = {
+		BatchLayer.loadIfNone()
 		println("Constructing batch view 2...")
 
 		val toDateTime = udf((ts: Long) => {
@@ -51,3 +52,5 @@ object BatchView2 {
 			println("Done constructing view. Row count: " + view.count)
 	}
 }
+
+BatchView2.construct
