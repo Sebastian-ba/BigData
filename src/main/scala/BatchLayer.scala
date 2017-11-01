@@ -58,6 +58,11 @@ object BatchLayer {
 		val rowNumber = (MasterDataset.devices.count + MasterDataset.routers.count + MasterDataset.lectures.count)
 		println("Master Dataset Loaded. Row count: " + rowNumber)
 
+		//Loading purposes:
+		BatchView1.construct
+		BatchView2.construct
+		BatchView3.construct
+
 	}
 
 	def printList(l:Array[java.io.File]) = {

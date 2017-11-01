@@ -2,6 +2,7 @@
 case class View2(
 	did:String, 
 	cid: String,
+	date: String,
 	deviceName:String,	
 	location:String, 
 	uniformRoom:String,
