@@ -1,7 +1,7 @@
 
 object BatchLayer {
-	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[ParsedDeviceReadings], var lectures:Dataset[ParsedLectureReadings])
-	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[ParsedDeviceReadings].toDS, Seq.empty[ParsedLectureReadings].toDS)
+	case class MasterDataset(var devices:Dataset[FlattenedReadings], var routers:Dataset[ParsedDeviceReadings], var lectures:Dataset[FlattenedLectureReadings])
+	var masterDataset: MasterDataset = MasterDataset(Seq.empty[FlattenedReadings].toDS, Seq.empty[ParsedDeviceReadings].toDS, Seq.empty[FlattenedLectureReadings].toDS)
 
 	def start() : Unit = {
 
@@ -49,7 +49,6 @@ object BatchLayer {
 		masterDataset = MasterDataset(deviceDF, parsedRoutersDF, lectureDF)
 
 		println("Master Dataset Loaded")
-
 	}
 
 	def printList(l:Array[java.io.File]) = {
@@ -69,7 +68,7 @@ object BatchLayer {
 		return dfRoomConverted.asInstanceOf[Dataset[ParsedDeviceReadings]]
 	}
 
-	def cleanLectureReadings(df:Dataset[LectureReadings]) : Dataset[ParsedLectureReadings] = {
+	def cleanLectureReadings(df:Dataset[LectureReadings]) : Dataset[FlattenedLectureReadings] = {
 		val concatToTimestamp = udf((first: String, second: String) => {
 			val tmp = first + " " + second
 			val sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm")
@@ -80,7 +79,7 @@ object BatchLayer {
 		val toUniformRoomList = udf((roomStr: String) => {
 			val roomRegex = """([\d][\w][\d]{2}[\w]?(?:[-\/](?:[\d]+))?)""".r
 			val roomSplitRegex = """([\d][\w])([\d]{2})(?:[-\/]([\d]+))""".r
-			var results: List[String] = List()
+			var results: Array[String] = Array()
 			for (m <- roomRegex.findAllIn(roomStr)) m match {
 				case roomSplitRegex(location, room1, room2) => 
 					results = (results :+(location+room1)) :+ (location+room2)
@@ -92,8 +91,18 @@ object BatchLayer {
 		val dfStartTimestampConverted = df.withColumn("startTimestamp", concatToTimestamp($"startDate",$"startTime"))
 		val dfEndTimestampConverted = dfStartTimestampConverted.withColumn("endTimestamp", concatToTimestamp($"endDate",$"endTime"))
 		val dfRoomParsed = dfEndTimestampConverted.withColumn("roomList", toUniformRoomList($"room"))
+		
+		return flattenLectureReadings(dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]])
+	}
 
-		return dfRoomParsed.asInstanceOf[Dataset[ParsedLectureReadings]]
+	def flattenLectureReadings(df:Dataset[ParsedLectureReadings]) : Dataset[FlattenedLectureReadings] = {
+		df.flatMap(row => {
+			println(row.roomList.size)
+			val seq = for(i <- 0 until row.roomList.size) yield {
+				FlattenedLectureReadings(row.name, row.startDate, row.endDate, row.startTime, row.endTime, row.room, row.lecturers, row.programme, row.startTimestamp, row.endTimestamp, row.roomList, row.roomList(i))
+			}
+			seq.toSeq
+		})
 	}
 
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
