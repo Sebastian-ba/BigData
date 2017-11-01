@@ -5,7 +5,7 @@ object BatchLayer {
 
 	def start() : Unit = {
 
-		println("Starting Batch Layer")
+		println("Starting Loading of MasterDataset")
 
 		val spark = SparkSession.builder
 			.appName("Scala Spark")
@@ -33,9 +33,7 @@ object BatchLayer {
 
 		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
-		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]
-		println("Before union")
-		
+		val lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]		
 		for(i <- 1 to lectureFiles.length-1){
 			val tmpLectures = spark.read.json(lectureFiles(i).toString())
 			if(tmpLectures.count() > 0) {
