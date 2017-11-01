@@ -11,8 +11,7 @@ case class View1(did:String,
 		uniformRoom:String,
 		avgRssi:Double,
 		avgSnRatio:Double,
-		date:String, 
-		ts:Long)
+		date:String)
 
 object BatchView1 {
 
@@ -24,27 +23,24 @@ object BatchView1 {
 		
 		val devices = BatchLayer.masterDataset.devices
 		val routers = BatchLayer.masterDataset.routers
-		devices.show
-		
-		
-		val data = devices.groupBy("did", "ts").agg(avg("rssi"), avg("snRatio"))
-		data.orderBy(asc("avg(rssi)")).show()
+		//devices.show
 
-		val df = new SimpleDateFormat("yyyy-MM-dd")
-		
 		val toDateTime = udf((ts: Long) => {
-			val df = new SimpleDateFormat("yyyy-MM-dd")
+			val df = new SimpleDateFormat("yyyy-MM-dd HH:mm")
 			val date = df.format(ts * 1000L)
 			date
 			
 		})
 
-		val viewData = data.join(routers, "did").drop("upTime")
-			.withColumnRenamed("avg(rssi)", "avgRssi").withColumnRenamed("avg(snRatio)", "avgSnRatio")
-			.withColumn("date", toDateTime($"ts"))
-		viewData.show
+		val data = devices.withColumn("date", toDateTime($"ts")).groupBy("did", "date").agg(avg("rssi"), avg("snRatio"))
+
+		val viewData = data
+							.join(routers, "did")
+							.drop("upTime")
+							.withColumnRenamed("avg(rssi)", "avgRssi")
+							.withColumnRenamed("avg(snRatio)", "avgSnRatio")
 		view = viewData.as[View1]
-		//devices.show
+		println("Done constructing batch view 1")
 	}
 
 
