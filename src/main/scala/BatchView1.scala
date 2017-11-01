@@ -14,11 +14,8 @@ case class View1(did:String,
 		date:String)
 
 object BatchView1 {
-
+	
 	var view:Dataset[View1] = Seq.empty[View1].toDS
-	//case class Data(var view:Dataset[View1])
-	//var data: Data = Data(Seq.empty[View1].toDS)
-
 
 	def construct():Unit = {
 		println("Constructing batch view 1...")
@@ -40,10 +37,6 @@ object BatchView1 {
 			.withColumnRenamed("avg(snRatio)", "avgSnRatio")
 			.as[View1]
 		
-
-		//data = Data(view)
 		println("Done constructing batch view 1")
 	}
-
-
 }
