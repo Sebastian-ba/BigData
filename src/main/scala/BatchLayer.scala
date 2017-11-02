@@ -19,7 +19,7 @@ object BatchLayer {
 
 
 		//val devices = Dataset
-		val files = new java.io.File("../../../data/device/").listFiles.filter(_.getName.endsWith(".json"))
+		val files = new java.io.File("data/device/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(files)
 
 		//First dataset:
@@ -35,10 +35,10 @@ object BatchLayer {
 		val flatDeviceDF = flattenDF(devices)
 		val deviceDF = fullFlatten(flatDeviceDF)
 
-		val routersDF = spark.read.json("../../../data/routers/meta.json").as[DeviceReadings]
+		val routersDF = spark.read.json("data/routers/meta.json").as[DeviceReadings]
 		val parsedRoutersDF = cleanDeviceReadings(routersDF)
 
-		val lectureFiles = new java.io.File("../../../data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
+		val lectureFiles = new java.io.File("data/lectures/").listFiles.filter(_.getName.endsWith(".json"))
 		printList(lectureFiles)
 		var lectures = spark.read.json(lectureFiles(0).toString()).as[LectureReadings]		
 		for(i <- 1 to lectureFiles.length-1){

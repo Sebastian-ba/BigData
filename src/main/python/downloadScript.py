@@ -3,9 +3,9 @@ import os, requests
 import re
 
 # Osfuscate -> separate file
-router_dir = "../../../data/device/"
-room_dir = "../../../data/lectures/"
-meta_dir = "../../../data/routers/"
+router_dir = "../scala/data/device/"
+room_dir = "../scala/data/lectures/"
+meta_dir = "../scala/data/routers/"
 
 with open("scriptUrl.txt", "r") as cfg:
 	url = cfg.read()
