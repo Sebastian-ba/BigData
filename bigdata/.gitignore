@@ -1,0 +1,7 @@
+data/*
+data
+host.txt
+scriptUrl.txt
+metastore_db
+derby.log
+.DS_STORE
