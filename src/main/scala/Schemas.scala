@@ -16,12 +16,13 @@ import java.sql.Timestamp
 import org.apache.spark.rdd.RDD
 
 
-
+// taken from "LoadReading.scala", provided to us by tutor "Omar Shahbaz Khan" in his Piazza Post the 18/10/2017
 case class Readings (did:String, readings:Array[(Array[(String,String,Double,Double,String)],Long)])
 case class ExplodedReadings (did: String, readings:(Array[(String,String,Double,Double,String)],Long))
 case class FlattenedReadingsInput (did:String, cid:Array[String], clientOS:Array[String], rssi:Array[Double], snRatio:Array[Double], ssid:Array[String], ts:Long)
 case class FlattenedReadings (did:String, cid:String, clientOS:String, rssi:Double, snRatio:Double, ssid:String, ts:Long)
-//Schema from Omar Shahbaz Khan
+
+// taken from "LoadReading.scala", provided to us by tutor "Omar Shahbaz Khan" in his Piazza Post the 18/10/2017
 val readingsSchema = StructType(Array(
 				StructField("did",StringType,true),
 				StructField("readings",ArrayType(StructType(Array(
@@ -34,6 +35,7 @@ val readingsSchema = StructType(Array(
 					StructField("ts",LongType,true))),true),true)))
 
 
+// these below are our own schemas
 case class DeviceReadings (devicename:String, upTime:String, deviceFunction:String, deviceMode:String, did:String, location:String)
 case class ParsedDeviceReadings (devicename:String, upTime:String, deviceFunction:String, deviceMode:String, did:String, location:String, uniformRoom:String)
 
