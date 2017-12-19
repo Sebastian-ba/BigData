@@ -117,7 +117,7 @@ object BatchLayer {
 			seq.toSeq
 		})
 	}
-
+	// taken from "LoadReading.scala", provided to us by tutor "Omar Shahbaz Khan" in his Piazza Post the 18/10/2017
 	def fullFlatten(df:Dataset[FlattenedReadingsInput]) : Dataset[FlattenedReadings] = {
 		df.flatMap(row => {
 	        val seq = for( i <- 0 until row.cid.size) yield { 
@@ -126,7 +126,7 @@ object BatchLayer {
 	        seq.toSeq			
 		})
     }
-
+	// taken from "LoadReading.scala", provided to us by tutor "Omar Shahbaz Khan" in his Piazza Post the 18/10/2017
 	def flattenDF (df:Dataset[Readings]): Dataset[FlattenedReadingsInput] = {
 		val expDF = df.withColumn("readings", explode(col("readings"))).as[ExplodedReadings]
 		expDF
